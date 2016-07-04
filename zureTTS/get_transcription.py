@@ -13,7 +13,9 @@ import requests
 def read_file(filename):
     
     with open(filename, 'r') as source:
-        return source.readlines()
+        text = source.read()
+        
+    return text.split('.')
         
 def transcribe(sentence):
     
