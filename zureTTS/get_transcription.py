@@ -9,13 +9,14 @@ Transcribe Gaelic corpus using abair.ie
 
 from lxml import html
 import requests
+import re
 
 def read_file(filename):
     
     with open(filename, 'r') as source:
         text = source.read()
         
-    return text.split('.')
+    return re.split('(?<=[.!?]) +',text)
         
 def transcribe(sentence):
     
