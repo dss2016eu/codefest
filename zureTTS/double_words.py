@@ -2,6 +2,9 @@
 """
 Created on Tue Jul  5 16:28:56 2016
 
+Doubles every second word.
+Usage: double_words.py <input> <output>
+
 @author: vurga
 """
 
