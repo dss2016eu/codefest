@@ -1,19 +1,19 @@
 Question ID,Fold,Answer,Category,Text
-,train,Aristoteles,Zientzia,Estagirita ezizena zeukan ||| Logikaren sortzailetzat jotzen da ||| Atenaseko akademian platonen ikasle izan ze
-,train,New York,Geografia,"1948an munduko hiririk jendetsuena izatera iritsi zen|||munduko eraikinik garaienetako asko hiri honetan aurki daitezke|||Hiriaren gehiena hiru uharteetan banatuta dago: Manhattan, Staten Island eta Long Island"
-,train,Marte,Zientzia,bi satelite natural ditu: Phobos eta Deimos|| Eguzkitik hasita laugarren planeta da||Planeta Gorria ere irizten zaio
-,train,Jesus Nazaretekoa,Giza_zientziak,"""Eli, Eli, lema sabaktani"" ohikatu zuen|||hainbat mirari egin zituen bere bizitzan zehar|||alilea eta Judea lurraldeetan zehar ibili zen bere mezua zabaltzen eta mirariak egiten"
-,train,Picasso,Artea,"Málagan jaio zen 1881eko urriaren 25ean||| XX. mendeko artista esanguratsuenetarikoa, kubismoaren sortzaileetakoa|||Bere lan nagusietakoa Gernika deitzen da"
-,train,Australia,Geografia,estatu burujabe handienetan seigarrena da|||Ingelesa da hizkuntza nazionala|||Canberra da bertako hiriburua
-,train,Edgar Allan Poe,Literatura,"atzerrian izena lortu zuen Estatu Batuetako lehen idazlea|||poeta, ipuin idazlea eta literatura kritikaria izan zen. Genero gotikoaren erakusgarrietako bat da||| Belea poemak eta Morgue kaleko hilketak kontakizunak dira bere lanetako batzuk"
-,train,Egipto,Geografia,Hizkuntza ofiziala arabiera da eta bereber hizkuntza basamortuko herri batzuek erabiltzen dute|||Lehen aztarnak K.a. 4000. urte ingurukoak dira|||Hiriburua eta hiri nagusia Kairo da
-,train,Franz Kafka,Literatura,"Tuberkulosiak jota hil zen hil zen 1924ko ekainaren 3an|||Berak kontrakoa adierazi bazuen ere, Max Brod bere lagunak hil ostean bere obrak argitaratzeko agindu zuen|||Prozesua eta Metamorfosia dira bere lanik ezagunenetakoak"
-,train,Andy Warhol,Artea,Bere lehen artelanak komikietan oinarrituriko koadroak izan ziren||| The Velvet Underground rock taldearen babesle eta eragile izan zen||| Pop Art mugimenduaren sortzaileetariko bat izan zen
-,train,Sigmund Freud,Giza_zientziak,"1856ko maiatzaren 6an jaio eta 1939ko irailaren 23an hil zen||| mediku eta neurologo austriarra|||""Psikoanalisiaren aita"""
-,train,Italo Calvino,Literatura,"italiar idazlea|||umorea eta fantasia errealismoarekin nahasten ditu bere ipuin eta eleberrietan|||""Bizkonde erdibitua"" lana idatzi zuen"
-,train,Integrala,Matematika,Berau determinatzeko balio duen lehenbiziko teknika sistematiko dokumentatua Eudoxoren exhauzio-metodoa da|||Oso erabilia da ingenieritzan eta matematika orokorrean; batez ere azalerak eta biraketa gorputzen bolumenak kalkulatzeko||| infinitu batugai azkengabe txikiren batuketa da
-,train,Olagarroa,Zientzia,"Bizkaian amarratz ere diote||| zefalopodoen ordena bat da|||Burua arrautza itxurakoa, begiak irtenak eta zortzi garro ditu"
-,train,Maurice Ravel,Artea,Ziburun jaio zen 1875eko martxoaren 7an||| musikagilea eta piano jotzailea izan zen|||Boléro da haren lanik ezagunena
-,train,Bertrand Russell,Zientzia,"1960. urtean Estatu Batuek Vietnami egindako erasoaldiaren aurkako mugimendua antolatu zuen Jean Paul Sartre frantses intelektualarekin batera|||Matematikaz, Filosofiaz eta Politikaz idatzi zuen batez ere|||Alfred North Whiteheadekin batera idatzi zuen Principia Mathematica (1910-1913, hiru ale)"
-,train,Zeus,Giza_zientziak,"Kronos eta Rea titanen seme gazteena izan zen|||bere sinboloak tximista, arranoa, zezena eta haritza dira|||Greziar mitologian ""jainkoen eta gizakiaren aita da"""
-,,Istanbul,Geografia,Bizas zeritzan Megarako kolonoen erregeak eman zion izena||| Itsaso Beltza eta Marmara itsasoa lotzen diren lekuan dago||| Bizantzio eta gero Konstantinopla izan dira baita bere izenak
+;train;Aristoteles;Zientzia;Estagirita ezizena zeukan ||| Logikaren sortzailetzat jotzen da ||| Atenaseko akademian platonen ikasle izan zen
+;train;New York;Geografia;"1948an munduko hiririk jendetsuena izatera iritsi zen|||munduko eraikinik garaienetako asko hiri honetan aurki daitezke|||Hiriaren gehiena hiru uharteetan banatuta dago: Manhattan, Staten Island eta Long Island"
+;train;Marte;Zientzia;bi satelite natural ditu: Phobos eta Deimos||| Eguzkitik hasita laugarren planeta da|||Planeta Gorria ere irizten zaio
+;train;Jesus Nazaretekoa;Giza_zientziak;"""Eli, Eli, lema sabaktani"" ohikatu zuen|||hainbat mirari egin zituen bere bizitzan zehar|||alilea eta Judea lurraldeetan zehar ibili zen bere mezua zabaltzen eta mirariak egiten"
+;train;Picasso;Artea;"Málagan jaio zen 1881eko urriaren 25ean||| XX. mendeko artista esanguratsuenetarikoa, kubismoaren sortzaileetakoa|||Bere lan nagusietakoa Gernika deitzen da"
+;train;Australia;Geografia;estatu burujabe handienetan seigarrena da|||Ingelesa da hizkuntza nazionala|||Canberra da bertako hiriburua
+;train;Edgar Allan Poe;Literatura;"atzerrian izena lortu zuen Estatu Batuetako lehen idazlea|||poeta, ipuin idazlea eta literatura kritikaria izan zen. Genero gotikoaren erakusgarrietako bat da||| Belea poemak eta Morgue kaleko hilketak kontakizunak dira bere lanetako batzuk"
+;train;Egipto;Geografia;Hizkuntza ofiziala arabiera da eta bereber hizkuntza basamortuko herri batzuek erabiltzen dute|||Lehen aztarnak K.a. 4000. urte ingurukoak dira|||Hiriburua eta hiri nagusia Kairo da
+;train;Franz Kafka;Literatura;"Tuberkulosiak jota hil zen hil zen 1924ko ekainaren 3an|||Berak kontrakoa adierazi bazuen ere, Max Brod bere lagunak hil ostean bere obrak argitaratzeko agindu zuen|||Prozesua eta Metamorfosia dira bere lanik ezagunenetakoak"
+;train;Andy Warhol;Artea;Bere lehen artelanak komikietan oinarrituriko koadroak izan ziren||| The Velvet Underground rock taldearen babesle eta eragile izan zen||| Pop Art mugimenduaren sortzaileetariko bat izan zen
+;train;Sigmund Freud;Giza_zientziak;"1856ko maiatzaren 6an jaio eta 1939ko irailaren 23an hil zen||| mediku eta neurologo austriarra|||""Psikoanalisiaren aita"""
+;train;Italo Calvino;Literatura;"italiar idazlea|||umorea eta fantasia errealismoarekin nahasten ditu bere ipuin eta eleberrietan|||""Bizkonde erdibitua"" lana idatzi zuen"
+;train;Integrala;Matematika;Berau determinatzeko balio duen lehenbiziko teknika sistematiko dokumentatua Eudoxoren exhauzio-metodoa da|||Oso erabilia da ingenieritzan eta matematika orokorrean, batez ere azalerak eta biraketa gorputzen bolumenak kalkulatzeko||| infinitu batugai azkengabe txikiren batuketa da
+;train;Olagarroa;Zientzia;"Bizkaian amarratz ere diote||| zefalopodoen ordena bat da|||Burua arrautza itxurakoa, begiak irtenak eta zortzi garro ditu"
+;train;Maurice Ravel;Artea;Ziburun jaio zen 1875eko martxoaren 7an||| musikagilea eta piano jotzailea izan zen|||Boléro da haren lanik ezagunena
+;train;Bertrand Russell;Zientzia;"1960. urtean Estatu Batuek Vietnami egindako erasoaldiaren aurkako mugimendua antolatu zuen Jean Paul Sartre frantses intelektualarekin batera|||Matematikaz, Filosofiaz eta Politikaz idatzi zuen batez ere|||Alfred North Whiteheadekin batera idatzi zuen Principia Mathematica (1910-1913, hiru ale)"
+;train;Zeus;Giza_zientziak;"Kronos eta Rea titanen seme gazteena izan zen|||bere sinboloak tximista, arranoa, zezena eta haritza dira|||Greziar mitologian ""jainkoen eta gizakiaren aita da"""
+,,Istanbul;Geografia;Bizas zeritzan Megarako kolonoen erregeak eman zion izena||| Itsaso Beltza eta Marmara itsasoa lotzen diren lekuan dago||| Bizantzio eta gero Konstantinopla izan dira baita bere izenak

@@ -2,7 +2,7 @@ import codecs
 import sys
 from collections import Counter
 import math
-
+import operator
 
 class Article:
 
@@ -31,7 +31,10 @@ class Article:
 
     def update_tfidf(self, doccount, docfrequencies):
         for word in self.vocab:
-            self.tfidf[word] = math.log(doccount / float(docfrequencies[word])) * self.wordcounts[word]
+            if word in docfrequencies:
+                self.tfidf[word] = math.log(doccount / float(docfrequencies[word])) * self.wordcounts[word]
+            else:
+                self.tfidf[word] = self.wordcounts[word]
         self.compute_norm()
 
 
@@ -58,6 +61,14 @@ class Wiki:
         for article in self.articles:
             article.update_tfidf(self.articlecount, self.docfrequencies)
 
+    def articles_similarity(self, hint_article, debug=False):
+        title_to_similarity = {}
+        for index, article in enumerate(self.articles, start=1):
+            title_to_similarity[article.title] = hint_article.similarity(article)
+            if debug and index % 10000 == 0:
+                print("Computed similarity for %d documents."   % index)
+        return title_to_similarity
+
 
 def article_streamer(input_path, token_separator="|", debug_limit=None):
     with codecs.open(input_path) as f:
@@ -73,30 +84,57 @@ def article_streamer(input_path, token_separator="|", debug_limit=None):
 
 def create_wiki(input, debug_limit=None):
     wiki = Wiki()
-    for title, cat, tokens in article_streamer(input, debug_limit=debug_limit):
+    for index, (title, cat, tokens) in enumerate(article_streamer(input, debug_limit=debug_limit), start=1):
         article = Article(title, cat, tokens)
         wiki.add_article(article)
 
+        if index % 10000 == 0:
+            print("Added %d articles to corpus" % index)
+
     wiki.update_tfidf()
+    print("Finished building corpus.")
     return wiki
 
 
 
 if __name__ == '__main__':
 
-    input = sys.argv[1]
-    wiki = create_wiki(input, debug_limit=100)
+    input = sys.argv[1]     # wiki corpus (tokenized in tsv format)
+    wiki = create_wiki(input, debug_limit=None)
+    questions = sys.argv[2]
+
 
     previous_article = None
 
-    for article in wiki.articles:
-        print(article.title)
-        print(len(article.vocab))
-        print(article.tfidf.items()[:10])
-        print(article.norm)
-        print("cosine with previous article")
-        print(article.similarity(previous_article if previous_article is not None else article))
-        print("\n")
-        previous_article = article
+    # for article in wiki.articles:
+    #     print(article.title)
+    #     print(len(article.vocab))
+    #     print(article.tfidf.items()[:10])
+    #     print(article.norm)
+    #     print("cosine with previous article")
+    #     print(article.similarity(previous_article if previous_article is not None else article))
+    #     print("\n")
+    #     previous_article = article
+
+
+    with codecs.open(questions, encoding="utf-8") as f:
+        for line in f:
+            split = line.split(";")
+            hint_text = split[-1]
+            hints = hint_text.split("|||")
+            hints_tokens = [hint.split() for hint in hints]
+            for index in range(1, len(hints_tokens)+1):
+                hint_tokens = hints_tokens[:index]
+                hint_tokens = [item for sublist in hint_tokens for item in sublist]
+                print(index, hint_tokens)
+                hint_article = Article("hint", "UNKNOWN", hint_tokens )
+                hint_article.update_tfidf(wiki.articlecount, wiki.docfrequencies)
+                title_to_sim = wiki.articles_similarity(hint_article)
+                sorted_title_to_sim = sorted(title_to_sim.items(), key=operator.itemgetter(1), reverse=True)[:10]
+                print(sorted_title_to_sim)
+                print("\n")
+
+            print("\n")
+
 
 
