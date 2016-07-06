@@ -58,23 +58,30 @@ def parse_wikipedia(input_file, output_file, categories=None, tokenize=True, sep
             if "<doc id" in line:
                 split = line.split("\"")
                 title = split[-2]
-                if "MediaWiki:" in title:       # ignore these articles
+                if title.startswith("MediaWiki:") or title.startswith("Wikipedia:") \
+                        or title.startswith("Portal:") or title.startswith("Hilfe"):       # ignore these articles
                     mediawiki_opened = True
                     continue
-                print(article_count, title.encode(default_encoding))
                 article_count += 1
                 current_text = []
                 title_to_text[title] = current_text
                 last_title = title
+
             elif "</doc>" in line:
-                mediawiki_opened = False
-                writer.write(last_title + "\t")
-                category = categories[last_title] if categories is not None and last_title in categories \
-                    else default_category
-                writer.write(category + "\t")
-                writer.write(separator.join(current_text))
-                writer.write("\n")
-                current_text = []
+                if not mediawiki_opened:
+                    mediawiki_opened = False
+                    writer.write(last_title + "\t")
+                    category = categories[last_title] if categories is not None and last_title in categories \
+                        else default_category
+                    writer.write(category)
+                    writer.write("\t")
+                    writer.write(separator.join(current_text))
+                    writer.write("\n")
+                    current_text = []
+
+                    if article_count % 1000 == 0:
+                        print(article_count, last_title)
+
             else:
                 if not mediawiki_opened:
                     line = remove_brackets(line)
@@ -123,7 +130,7 @@ def read_dbpedia_categories(input):
             split = line.split("\t")
             title = re.sub("_", " ", split[0])
             categories = split[-1]
-            title_to_categories[title] = categories
+            title_to_categories[title] = categories.strip()
     return title_to_categories
 
 if __name__ == "__main__":
@@ -135,7 +142,6 @@ if __name__ == "__main__":
     if len(sys.argv) > 3:
         title_to_categories = read_dbpedia_categories(sys.argv[3])
         print(title_to_categories.items()[:10])
-        print(title_to_categories["Asia"])
 
     parse_wikipedia(input_file, output_file, categories=title_to_categories)
 
