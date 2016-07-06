@@ -12,8 +12,8 @@ Usage: python split_sents.py <input> <output>
 import sys, re 
 from nltk import tokenize
 
-with open(sys.argv[1], 'r') as target:
-    text = target.read()
+with open(sys.argv[1], 'r', errors='ignore') as target:
+    text = target.read().lower()
 with open(sys.argv[2], 'w'):
     pass
     
