@@ -73,7 +73,7 @@ class Wiki:
         return title_to_similarity
 
 
-def article_streamer(input_path, token_separator="|", debug_limit=None):
+def article_streamer(input_path, token_separator="|", debug_limit=None, category_filter=None):
     with codecs.open(input_path, encoding="utf-8") as f:
         for index, article in enumerate(f):
             split = article.strip().split("\t")
@@ -145,36 +145,68 @@ def play_quizbowl_with_stats(questions_path, wiki):
      print("P@3:", correct_top3/float(hints_counter))
      print("P@5:", correct_top5/float(hints_counter))
 
+
+def json_serialiser(output_path, wiki):
+    with codecs.open(output_path, "w", encoding="utf-8") as f:
+        f.write(json.dumps({"docfrequencies": wiki.docfrequencies,
+                            "articlecount": wiki.articlecount}))
+        f.write("\n")
+        for article in wiki.articles:
+            f.write(json.dumps(article.__dict__))
+            f.write("\n")
+
+
+def json_deserialiser(input_path):
+    wiki = Wiki()
+    with codecs.open(input_path, encoding="utf-8") as f:
+        first = json.loads(next(f))
+        wiki.docfrequencies = first["docfrequencies"]
+        wiki.articlecount = first["articlecount"]
+        wiki_articles = []
+        for line in f:
+            article = Article("", "", [])
+            article.__dict__ = json.loads(line)
+            wiki_articles.append(article)
+        wiki.articles = wiki_articles
+    return wiki
+
+
 if __name__ == '__main__':
 
     input_path = sys.argv[1]     # wiki corpus (tokenized in tsv format)
     questions_path = sys.argv[2]
+    # if ".json" in input_path:
+    #     with open(input_path, "r") as f:
+    #         wiki_json = json.load(f)
+    #         articles = []
+    #         for article_json in wiki_json["articles"]:
+    #             article = Article("", "", [])
+    #             article.__dict__ = article_json
+    #             articles.append(article)
+    #         wiki = Wiki()
+    #         wiki.articles = articles
+    #         wiki.docfrequencies = wiki_json["docfrequencies"]
+    #         wiki.articlecount = wiki_json["articlecount"]
+    #     print("Wiki corpus loaded from %s" % input_path)
+    #
+    # else:
+    #     wiki = create_wiki(input_path, debug_limit=None)
+    #     json_path = input_path + ".json"
+    #     with open(json_path, "w") as f:
+    #         json.dump({"articles": [p.__dict__ for p in wiki.articles],
+    #                    "docfrequencies": wiki.docfrequencies,
+    #                    "articlecount": wiki.articlecount}, f)
+    #     print("Wiki dumped to %s" % json_path)
+
     if ".json" in input_path:
-        with open(input_path, "r") as f:
-            wiki_json = json.load(f)
-            articles = []
-            for article_json in wiki_json["articles"]:
-                article = Article("", "", [])
-                article.__dict__ = article_json
-                articles.append(article)
-            wiki = Wiki()
-            wiki.articles = articles
-            wiki.docfrequencies = wiki_json["docfrequencies"]
-            wiki.articlecount = wiki_json["articlecount"]
+        wiki = json_deserialiser(input_path)
         print("Wiki corpus loaded from %s" % input_path)
 
     else:
         wiki = create_wiki(input_path, debug_limit=None)
         json_path = input_path + ".json"
-        with open(json_path, "w") as f:
-            json.dump({"articles": [p.__dict__ for p in wiki.articles],
-                       "docfrequencies": wiki.docfrequencies,
-                       "articlecount": wiki.articlecount}, f)
+        json_serialiser(json_path, wiki)
         print("Wiki dumped to %s" % json_path)
-
-    # print(wiki.articles[1])
-    # print(wiki.docfrequencies.items()[1])
-    # print(wiki.articlecount)
 
     play_quizbowl_with_stats(questions_path, wiki)
 
