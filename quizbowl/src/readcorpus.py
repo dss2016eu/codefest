@@ -73,7 +73,7 @@ class Wiki:
 
 
 def article_streamer(input_path, token_separator="|", debug_limit=None):
-    with codecs.open(input_path) as f:
+    with codecs.open(input_path, encoding="utf-8") as f:
         for index, article in enumerate(f):
             split = article.strip().split("\t")
             title = split[0]
@@ -146,13 +146,15 @@ if __name__ == '__main__':
     input = sys.argv[1]     # wiki corpus (tokenized in tsv format)
     questions_path = sys.argv[2]
     if ".pickle" in input:
-        with codecs.open(input) as f:
+        with codecs.open(input, "rb") as f:
             wiki = pickle.load(f)
+        print("Wiki corpus loaded from %s"  % input)
     else:
         wiki = create_wiki(input, debug_limit=None)
-        with codecs.open( input + ".pickle", "w") as f:
+        pickle_path = input + ".pickle"
+        with codecs.open(pickle_path, "wb") as f:
             pickle.dump(wiki, f)
-
+        print("Wiki pickled to %s"   % pickle_path)
 
     play_quizbowl_with_stats(questions_path, wiki)
 
