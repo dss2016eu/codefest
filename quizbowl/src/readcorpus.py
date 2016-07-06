@@ -3,8 +3,8 @@ import sys
 from collections import Counter
 import math
 import operator
-import pickle
 import re
+import json
 
 class Article:
 
@@ -12,9 +12,7 @@ class Article:
         self.title = title
         self.category = category
         self.wordcounts = Counter(words)
-        self.vocab = set(self.wordcounts.keys())
-        for w in words:
-            self.wordcounts[w] = self.wordcounts.get(w, 0) + 1
+        self.vocab = list(self.wordcounts.keys())
         self.length = sum(self.wordcounts.values())
         self.tfidf = {}
         self.norm = 0                  # |A|, needed for quick cosine
@@ -24,7 +22,7 @@ class Article:
         self.norm = math.sqrt(sum([val**2 for val in self.tfidf.values()]))
 
     def dotproduct(self, other):
-        common_vocab = self.vocab.intersection(other.vocab)
+        common_vocab = set(self.vocab).intersection(set(other.vocab))
         return sum(self.tfidf[word] * other.tfidf[word] for word in common_vocab)
 
     def similarity(self, other):
@@ -39,16 +37,19 @@ class Article:
                 self.tfidf[word] = self.wordcounts[word]
         self.compute_norm()
 
+    def __repr__(self):
+        return "Article(title=%r, category=%r)"  % (self.title, self.category)
+
 
 class Wiki:
 
     def __init__(self):
-        self.articles = set()
+        self.articles = []
         self.docfrequencies = {}        # {"word": (word count in corpus, documents containing word)}
         self.articlecount = 0
 
     def add_article(self, article):
-        self.articles.add(article)
+        self.articles.append(article)
         self.articlecount += 1
         self.update_docfrequencies(article)      # update document frequencies
 
@@ -72,21 +73,30 @@ class Wiki:
         return title_to_similarity
 
 
-def article_streamer(input_path, token_separator="|", debug_limit=None):
-    with codecs.open(input_path) as f:
+def article_streamer(input_path, token_separator="|", debug_limit=None, length_filter=None):
+    skipped_count = 0
+    with codecs.open(input_path, encoding="utf-8") as f:
         for index, article in enumerate(f):
             split = article.strip().split("\t")
             title = split[0]
             category = split[1]
             tokens = split[-1].split(token_separator)
+            if length_filter is not None and len(tokens) <= length_filter:
+                skipped_count += 1
+                if skipped_count % 10000 == 0:
+                    print("%d. %s skipped" % (skipped_count, title))
+                continue
+            
             yield title, category, tokens
 
             if debug_limit is not None and index >= debug_limit:
                 break
 
-def create_wiki(input, debug_limit=None):
+        print("Altogether %d articles skipped" % (skipped_count))
+
+def create_wiki(input, debug_limit=None, length_filter=None):
     wiki = Wiki()
-    for index, (title, cat, tokens) in enumerate(article_streamer(input, debug_limit=debug_limit), start=1):
+    for index, (title, cat, tokens) in enumerate(article_streamer(input, debug_limit=debug_limit, length_filter=length_filter), start=1):
         article = Article(title, cat, tokens)
         wiki.add_article(article)
 
@@ -107,6 +117,7 @@ def play_quizbowl_with_stats(questions_path, wiki):
      correct_top1 = 0
      correct_top3 = 0
      correct_top5 = 0
+     hints_counter = 0
      with codecs.open(questions_path, encoding="utf-8") as f:
         for question_index, line in enumerate(f, start=1):
             print("Question %d" % question_index)
@@ -114,7 +125,9 @@ def play_quizbowl_with_stats(questions_path, wiki):
             correct_answer = re.sub('"', "", split[2])
             print("Correct answer:", correct_answer)
             hint_text = split[-1]
+            hints = re.sub('"', "", hint_text)
             hints = hint_text.split("|||")
+            hints_counter += len(hints)
             hints_tokens = [hint.split() for hint in hints]
             for hint_index in range(1, len(hints_tokens)+1):
                 hint_tokens = hints_tokens[:hint_index]
@@ -137,23 +150,74 @@ def play_quizbowl_with_stats(questions_path, wiki):
                     print("Match among top 5")
             print("\n")
 
-     print("P@1:", correct_top1/float(question_index))
-     print("P@3:", correct_top3/float(question_index))
-     print("P@5:", correct_top5/float(question_index))
+     print("P@1:", correct_top1/float(hints_counter))
+     print("P@3:", correct_top3/float(hints_counter))
+     print("P@5:", correct_top5/float(hints_counter))
+
+
+def json_serialiser(output_path, wiki):
+    with codecs.open(output_path, "w", encoding="utf-8") as f:
+        f.write(json.dumps({"docfrequencies": wiki.docfrequencies,
+                            "articlecount": wiki.articlecount}))
+        f.write("\n")
+        for article in wiki.articles:
+            f.write(json.dumps(article.__dict__))
+            f.write("\n")
+
+
+def json_deserialiser(input_path):
+    wiki = Wiki()
+    with codecs.open(input_path, encoding="utf-8") as f:
+        first = json.loads(next(f))
+        wiki.docfrequencies = first["docfrequencies"]
+        wiki.articlecount = first["articlecount"]
+        wiki_articles = []
+        for line in f:
+            article = Article("", "", [])
+            article.__dict__ = json.loads(line)
+            wiki_articles.append(article)
+        wiki.articles = wiki_articles
+    return wiki
+
 
 if __name__ == '__main__':
 
-    input = sys.argv[1]     # wiki corpus (tokenized in tsv format)
+    input_path = sys.argv[1]     # wiki corpus (tokenized in tsv format)
     questions_path = sys.argv[2]
-    if ".pickle" in input:
-        with codecs.open(input) as f:
-            wiki = pickle.load(f)
-    else:
-        wiki = create_wiki(input, debug_limit=None)
-        with codecs.open( input + ".pickle", "w") as f:
-            pickle.dump(wiki, f)
+    # if ".json" in input_path:
+    #     with open(input_path, "r") as f:
+    #         wiki_json = json.load(f)
+    #         articles = []
+    #         for article_json in wiki_json["articles"]:
+    #             article = Article("", "", [])
+    #             article.__dict__ = article_json
+    #             articles.append(article)
+    #         wiki = Wiki()
+    #         wiki.articles = articles
+    #         wiki.docfrequencies = wiki_json["docfrequencies"]
+    #         wiki.articlecount = wiki_json["articlecount"]
+    #     print("Wiki corpus loaded from %s" % input_path)
+    #
+    # else:
+    #     wiki = create_wiki(input_path, debug_limit=None)
+    #     json_path = input_path + ".json"
+    #     with open(json_path, "w") as f:
+    #         json.dump({"articles": [p.__dict__ for p in wiki.articles],
+    #                    "docfrequencies": wiki.docfrequencies,
+    #                    "articlecount": wiki.articlecount}, f)
+    #     print("Wiki dumped to %s" % json_path)
 
+    if ".json" in input_path:
+        wiki = json_deserialiser(input_path)
+        print("Wiki corpus loaded from %s" % input_path)
+
+    else:
+        wiki = create_wiki(input_path, debug_limit=None, length_filter=500)
+        json_path = input_path + ".json"
+        json_serialiser(json_path, wiki)
+        print("Wiki dumped to %s" % json_path)
 
     play_quizbowl_with_stats(questions_path, wiki)
+
 
 
