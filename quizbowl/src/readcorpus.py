@@ -3,6 +3,7 @@ import sys
 from collections import Counter
 import math
 import operator
+import pickle
 
 class Article:
 
@@ -100,9 +101,15 @@ def create_wiki(input, debug_limit=None):
 if __name__ == '__main__':
 
     input = sys.argv[1]     # wiki corpus (tokenized in tsv format)
-    wiki = create_wiki(input, debug_limit=None)
-    questions = sys.argv[2]
+    if ".pickle" in input:
+        with codecs.open(input) as f:
+            wiki = pickle.load(f)
+    else:
+        wiki = create_wiki(input, debug_limit=None)
+        with codecs.open( input + ".pickle", "w") as f:
+            pickle.dump(wiki, f)
 
+    questions_path = sys.argv[2]
 
     previous_article = None
 
@@ -117,9 +124,10 @@ if __name__ == '__main__':
     #     previous_article = article
 
 
-    with codecs.open(questions, encoding="utf-8") as f:
+    with codecs.open(questions_path, encoding="utf-8") as f:
         for line in f:
             split = line.split(";")
+            correct_answer = split[2]
             hint_text = split[-1]
             hints = hint_text.split("|||")
             hints_tokens = [hint.split() for hint in hints]
@@ -132,6 +140,7 @@ if __name__ == '__main__':
                 title_to_sim = wiki.articles_similarity(hint_article)
                 sorted_title_to_sim = sorted(title_to_sim.items(), key=operator.itemgetter(1), reverse=True)[:10]
                 print(sorted_title_to_sim)
+                print("Correct answer:", correct_answer)
                 print("\n")
 
             print("\n")
