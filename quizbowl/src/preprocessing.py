@@ -58,8 +58,8 @@ def parse_wikipedia(input_file, output_file, categories=None, tokenize=True, sep
             if "<doc id" in line:
                 split = line.split("\"")
                 title = split[-2]
-                if title.startswith("MediaWiki:") or title.startswith("Wikipedia:") \
-                        or title.startswith("Portal:") or title.startswith("Hilfe"):       # ignore these articles
+                if title.startswith("MediaWiki:") or title.startswith("Kategoria:")  or title.startswith("Wikipedia:") \
+                        or title.startswith("Portal:") or title.startswith("Hilfe") or title.startswith("Datei:"):       # ignore these articles
                     mediawiki_opened = True
                     continue
                 article_count += 1
@@ -137,10 +137,11 @@ if __name__ == "__main__":
 
     input_file = sys.argv[1]
     output_file = sys.argv[2]
+    dbpedia_categories = sys.argv[3]
 
     title_to_categories = None
     if len(sys.argv) > 3:
-        title_to_categories = read_dbpedia_categories(sys.argv[3])
+        title_to_categories = read_dbpedia_categories(dbpedia_categories)
         print(title_to_categories.items()[:10])
 
     parse_wikipedia(input_file, output_file, categories=title_to_categories)

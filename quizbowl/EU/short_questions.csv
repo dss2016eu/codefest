@@ -1,4 +1,3 @@
-Question ID,Fold,Answer,Category,Text
 ;train;Aristoteles;Zientzia;Estagirita ezizena zeukan ||| Logikaren sortzailetzat jotzen da ||| Atenaseko akademian platonen ikasle izan zen
 ;train;New York;Geografia;"1948an munduko hiririk jendetsuena izatera iritsi zen|||munduko eraikinik garaienetako asko hiri honetan aurki daitezke|||Hiriaren gehiena hiru uharteetan banatuta dago: Manhattan, Staten Island eta Long Island"
 ;train;Marte;Zientzia;bi satelite natural ditu: Phobos eta Deimos||| Eguzkitik hasita laugarren planeta da|||Planeta Gorria ere irizten zaio
@@ -16,4 +15,4 @@ Question ID,Fold,Answer,Category,Text
 ;train;Maurice Ravel;Artea;Ziburun jaio zen 1875eko martxoaren 7an||| musikagilea eta piano jotzailea izan zen|||Boléro da haren lanik ezagunena
 ;train;Bertrand Russell;Zientzia;"1960. urtean Estatu Batuek Vietnami egindako erasoaldiaren aurkako mugimendua antolatu zuen Jean Paul Sartre frantses intelektualarekin batera|||Matematikaz, Filosofiaz eta Politikaz idatzi zuen batez ere|||Alfred North Whiteheadekin batera idatzi zuen Principia Mathematica (1910-1913, hiru ale)"
 ;train;Zeus;Giza_zientziak;"Kronos eta Rea titanen seme gazteena izan zen|||bere sinboloak tximista, arranoa, zezena eta haritza dira|||Greziar mitologian ""jainkoen eta gizakiaren aita da"""
-,,Istanbul;Geografia;Bizas zeritzan Megarako kolonoen erregeak eman zion izena||| Itsaso Beltza eta Marmara itsasoa lotzen diren lekuan dago||| Bizantzio eta gero Konstantinopla izan dira baita bere izenak
+;train;Istanbul;Geografia;Bizas zeritzan Megarako kolonoen erregeak eman zion izena||| Itsaso Beltza eta Marmara itsasoa lotzen diren lekuan dago||| Bizantzio eta gero Konstantinopla izan dira baita bere izenak

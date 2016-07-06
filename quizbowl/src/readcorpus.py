@@ -4,6 +4,7 @@ from collections import Counter
 import math
 import operator
 import pickle
+import re
 
 class Article:
 
@@ -97,10 +98,53 @@ def create_wiki(input, debug_limit=None):
     return wiki
 
 
+def correct_among_top_n(answer, ranking, top_n=1):
+    topn_ranked = ranking[:top_n+1]
+    return any(answer in candidate for (candidate, sim_score) in topn_ranked)
+
+
+def play_quizbowl_with_stats(questions_path, wiki):
+     correct_top1 = 0
+     correct_top3 = 0
+     correct_top5 = 0
+     with codecs.open(questions_path, encoding="utf-8") as f:
+        for question_index, line in enumerate(f, start=1):
+            print("Question %d" % question_index)
+            split = line.split(";")
+            correct_answer = re.sub('"', "", split[2])
+            print("Correct answer:", correct_answer)
+            hint_text = split[-1]
+            hints = hint_text.split("|||")
+            hints_tokens = [hint.split() for hint in hints]
+            for hint_index in range(1, len(hints_tokens)+1):
+                hint_tokens = hints_tokens[:hint_index]
+                hint_tokens = [item for sublist in hint_tokens for item in sublist]
+                print(hint_index, " ".join(hint_tokens))
+                hint_article = Article("hint", "UNKNOWN", hint_tokens )
+                hint_article.update_tfidf(wiki.articlecount, wiki.docfrequencies)
+                title_to_sim = wiki.articles_similarity(hint_article)
+                sorted_title_to_sim = sorted(title_to_sim.items(), key=operator.itemgetter(1), reverse=True)[:10]
+                print("Top 10 ranked answers:")
+                print(sorted_title_to_sim)
+                if correct_among_top_n(correct_answer, sorted_title_to_sim, 1):
+                    correct_top1 += 1
+                    print("Match among top 1")
+                if correct_among_top_n(correct_answer, sorted_title_to_sim, 3):
+                    correct_top3 += 1
+                    print("Match among top 3")
+                if correct_among_top_n(correct_answer, sorted_title_to_sim, 5):
+                    correct_top5 += 1
+                    print("Match among top 5")
+            print("\n")
+
+     print("P@1:", correct_top1/float(question_index))
+     print("P@3:", correct_top3/float(question_index))
+     print("P@5:", correct_top5/float(question_index))
 
 if __name__ == '__main__':
 
     input = sys.argv[1]     # wiki corpus (tokenized in tsv format)
+    questions_path = sys.argv[2]
     if ".pickle" in input:
         with codecs.open(input) as f:
             wiki = pickle.load(f)
@@ -109,41 +153,7 @@ if __name__ == '__main__':
         with codecs.open( input + ".pickle", "w") as f:
             pickle.dump(wiki, f)
 
-    questions_path = sys.argv[2]
 
-    previous_article = None
-
-    # for article in wiki.articles:
-    #     print(article.title)
-    #     print(len(article.vocab))
-    #     print(article.tfidf.items()[:10])
-    #     print(article.norm)
-    #     print("cosine with previous article")
-    #     print(article.similarity(previous_article if previous_article is not None else article))
-    #     print("\n")
-    #     previous_article = article
-
-
-    with codecs.open(questions_path, encoding="utf-8") as f:
-        for line in f:
-            split = line.split(";")
-            correct_answer = split[2]
-            hint_text = split[-1]
-            hints = hint_text.split("|||")
-            hints_tokens = [hint.split() for hint in hints]
-            for index in range(1, len(hints_tokens)+1):
-                hint_tokens = hints_tokens[:index]
-                hint_tokens = [item for sublist in hint_tokens for item in sublist]
-                print(index, hint_tokens)
-                hint_article = Article("hint", "UNKNOWN", hint_tokens )
-                hint_article.update_tfidf(wiki.articlecount, wiki.docfrequencies)
-                title_to_sim = wiki.articles_similarity(hint_article)
-                sorted_title_to_sim = sorted(title_to_sim.items(), key=operator.itemgetter(1), reverse=True)[:10]
-                print(sorted_title_to_sim)
-                print("Correct answer:", correct_answer)
-                print("\n")
-
-            print("\n")
-
+    play_quizbowl_with_stats(questions_path, wiki)
 
 
