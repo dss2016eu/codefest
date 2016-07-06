@@ -21,5 +21,6 @@ text = re.sub('"', '', text)
 sents = tokenize.sent_tokenize(text)
 
 for sent in sents:
-    with open(sys.argv[2], 'a+') as target:
-        target.write(sent + ' \n')
+    if re.match('.*[jkqvwxyz].*', sent) == None:
+        with open(sys.argv[2], 'a+') as target:
+            target.write(sent + ' \n')
