@@ -73,21 +73,30 @@ class Wiki:
         return title_to_similarity
 
 
-def article_streamer(input_path, token_separator="|", debug_limit=None, category_filter=None):
+def article_streamer(input_path, token_separator="|", debug_limit=None, length_filter=None):
+    skipped_count = 0
     with codecs.open(input_path, encoding="utf-8") as f:
         for index, article in enumerate(f):
             split = article.strip().split("\t")
             title = split[0]
             category = split[1]
             tokens = split[-1].split(token_separator)
+            if length_filter is not None and len(tokens) <= length_filter:
+                skipped_count += 1
+                if skipped_count % 10000 == 0:
+                    print("%d. %s skipped" % (skipped_count, title))
+                continue
+            
             yield title, category, tokens
 
             if debug_limit is not None and index >= debug_limit:
                 break
 
-def create_wiki(input, debug_limit=None):
+        print("Altogether %d articles skipped" % (skipped_count))
+
+def create_wiki(input, debug_limit=None, length_filter=None):
     wiki = Wiki()
-    for index, (title, cat, tokens) in enumerate(article_streamer(input, debug_limit=debug_limit), start=1):
+    for index, (title, cat, tokens) in enumerate(article_streamer(input, debug_limit=debug_limit, length_filter=length_filter), start=1):
         article = Article(title, cat, tokens)
         wiki.add_article(article)
 
@@ -203,7 +212,7 @@ if __name__ == '__main__':
         print("Wiki corpus loaded from %s" % input_path)
 
     else:
-        wiki = create_wiki(input_path, debug_limit=None)
+        wiki = create_wiki(input_path, debug_limit=None, length_filter=500)
         json_path = input_path + ".json"
         json_serialiser(json_path, wiki)
         print("Wiki dumped to %s" % json_path)
