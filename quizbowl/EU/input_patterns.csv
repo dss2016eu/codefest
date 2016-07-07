@@ -1,0 +1,10 @@
+idazle (hau|honek)	Person
+herrialde (hau|honek)	Place
+(ibili|hil|jaio|ikasle|irakasle|idazle|poeta|kritikari|eragile)(a)? (izan)? zen	Person
+(idatzi|eraiki|antolatu) zuen	Person
+(gizon|emakume|zientzialari) (hau|honek)	Person
+idazle|poeta|autore|idazlari	Writer
+(hiriburu|hizkuntza ofizial|biztanle|estatu)(a)	Place
+ren orderna|burua|arrautza	Animal
+(urte)(an| honetan| hartan)	Year
+((t|d)ako|ren) (margolan|liburu|eleberri|poema|ipuin)	Work
