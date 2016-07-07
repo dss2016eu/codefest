@@ -34,7 +34,7 @@ class Article:
     def update_tfidf(self, doccount, docfrequencies):
         for word in self.wordcounts.keys():
             if word in docfrequencies:
-                self.tfidf[word] = math.log(doccount / float(docfrequencies[word])) * self.wordcounts[word]
+                self.tfidf[word] = math.log(doccount / float(docfrequencies[word])) * (1 + math.log(self.wordcounts[word]))
             else:
                 self.tfidf[word] = self.wordcounts[word]
         self.compute_norm()
