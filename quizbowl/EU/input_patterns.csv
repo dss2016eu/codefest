@@ -1,6 +1,6 @@
+artista (hau|hon)	Artist
 esan zein den .* (idazle|poeta|autore|idazlari) .* izena	Writer
 idazle|poeta|autore|idazlari (hau|hon)	Writer
-artista (hau|hon)	Artist
 esan zein den .* (idazle|poeta|autore|idazlari|margolari|gizon|emakume|zientzialari|konposatzaile|egile) .* izena	Person
 esan zein den .* (herrialde|toki|nazio|hiri|leku|hiriburu|herri) .* izena	Place
 esan nor den	Person
