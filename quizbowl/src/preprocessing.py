@@ -46,6 +46,9 @@ def yield_line(filepath):
 
 
 def parse_wikipedia(input_file, output_file, categories=None, tokenize=True, separator="|", debug_limit=None):
+
+    bad_titles = ['Atari:','Ataria:','Fitxategi:','Kategoria:','Laguntza:','UTC+','Usuario:','Wikipedia:','Wikiproiektu:','Wikiproiektua:','Portal:','Hilfe:','Datei:']
+
     writer = codecs.open(output_file, "w", encoding=default_encoding)
     title_to_text = {}
     default_category = "UNKNOWN"
@@ -58,9 +61,13 @@ def parse_wikipedia(input_file, output_file, categories=None, tokenize=True, sep
             if "<doc id" in line:
                 split = line.split("\"")
                 title = split[-2]
-                if title.startswith("MediaWiki:") or title.startswith("Kategoria:")  or title.startswith("Wikipedia:") \
-                        or title.startswith("Portal:") or title.startswith("Hilfe") or title.startswith("Datei:"):       # ignore these articles
-                    mediawiki_opened = True
+
+                badt = False
+                for t in bad_titles:
+                    if title.startswith(t):
+                        mediawiki_opened = True
+                        badt = True
+                if badt == True:
                     continue
                 article_count += 1
                 current_text = []
