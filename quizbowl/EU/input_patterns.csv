@@ -1,10 +1,17 @@
-idazle (hau|honek)	Person
-herrialde (hau|honek)	Place
-(ibili|hil|jaio|ikasle|irakasle|idazle|poeta|kritikari|eragile)(a)? (izan)? zen	Person
+esan zein den .* (idazle|poeta|autore|idazlari) .* izena	Writer
+idazle|poeta|autore|idazlari (hau|hon)	Writer
+artista (hau|hon)	Artist
+esan zein den .* (idazle|poeta|autore|idazlari|margolari|gizon|emakume|zientzialari|konposatzaile|egile) .* izena	Person
+esan zein den .* (herrialde|toki|nazio|hiri|leku|hiriburu|herri) .* izena	Place
+esan nor den	Person
+esan non	Place
+esan noiz	Year
+idazle|poeta|autore|idazlari|margolari|gizon|emakume|zientzialari|konposatzaile|egile|artista|ikasle (hau|hon)	Person
 (idatzi|eraiki|antolatu) zuen	Person
-(gizon|emakume|zientzialari) (hau|honek)	Person
-idazle|poeta|autore|idazlari	Writer
-(hiriburu|hizkuntza ofizial|biztanle|estatu)(a)	Place
+(ibili|hil|jaio|idazle|poeta|autore|idazlari|margolari|gizon|emakume|zientzialari|konposatzaile|egile|artista|ikasle)(a)? (izan)? zen	Person
+sortzaile(etariko|tzat)  bat .* zen	Person
+(herrialde|toki|nazio|hiri|leku|hiriburu|herri) (hau|hon)	Place
 ren orderna|burua|arrautza	Animal
-(urte)(an| honetan| hartan)	Year
+(urte) (an| honetan| hartan)	Year
 ((t|d)ako|ren) (margolan|liburu|eleberri|poema|ipuin)	Work
+sortzailetzat jo	Person
