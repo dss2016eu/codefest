@@ -5,8 +5,6 @@ import math
 import operator
 import re
 import json
-import csv
-import string
 import nltk
 
 class Article:
@@ -69,12 +67,12 @@ class Wiki:
             article.update_tfidf(self.articlecount, self.docfrequencies)
 
     def articles_similarity(self, hint_article, debug=False):
-        title_to_similarity = {}
+        titlecat_to_similarity = {}
         for index, article in enumerate(self.articles, start=1):
-            title_to_similarity[article.title] = hint_article.similarity(article)
+            titlecat_to_similarity[(article.title, article.category)] = hint_article.similarity(article)
             if debug and index % 10000 == 0:
                 print("Computed similarity for %d documents."   % index)
-        return title_to_similarity
+        return titlecat_to_similarity
 
 
 def article_streamer(input_path, token_separator="|", debug_limit=None, length_filter=None):
@@ -90,13 +88,12 @@ def article_streamer(input_path, token_separator="|", debug_limit=None, length_f
                 if skipped_count % 10000 == 0:
                     print("%d. %s skipped" % (skipped_count, title))
                 continue
-
             yield title, category, tokens
 
             if debug_limit is not None and index >= debug_limit:
                 break
-
         print("Altogether %d articles skipped" % (skipped_count))
+
 
 def create_wiki(input, debug_limit=None, length_filter=None):
     wiki = Wiki()
@@ -114,13 +111,58 @@ def create_wiki(input, debug_limit=None, length_filter=None):
 
 def correct_among_top_n(answer, ranking, top_n=1):
     topn_ranked = ranking[:top_n+1]
-    return any(answer in candidate for (candidate, sim_score) in topn_ranked)
+    return any(answer in candidate_title for ((candidate_title, candidate_cat), sim_score) in topn_ranked)
 
 
-def play_quizbowl_with_stats(questions_path, wiki):
-     correct_top1 = 0
-     correct_top3 = 0
-     correct_top5 = 0
+def title_contained_in_hint(candidate_title, hint_str):
+    tokenized_title = nltk.word_tokenize(candidate_title)
+    tokenized_title_entities = [word for word in tokenized_title if word[0].isupper()]
+    return any(entity in hint_str for entity in tokenized_title_entities)
+
+
+def filter_pattern(pattern_file, tokenized_words):
+    wstring = ' '.join(tokenized_words)
+    filterlines = [line.strip() for line in codecs.open(pattern_file, "r", encoding="utf-8")]
+    for l in filterlines:
+        pattern, reply = l.split('\t')
+        if re.search(pattern, wstring, flags=re.IGNORECASE):
+            return reply
+    return "UNKNOWN"
+
+
+def rank_articles(hint_str, wiki, filter_patterns, top_n):
+    tokenized = nltk.word_tokenize(hint_str)
+    hint_article = Article("hint", "UNKNOWN", tokenized)
+    hint_article.update_tfidf(wiki.articlecount, wiki.docfrequencies)
+    titlecat_to_sim = wiki.articles_similarity(hint_article)
+    sorted_title_to_sim = sorted(titlecat_to_sim.items(), key=operator.itemgetter(1), reverse=True)[:100]
+    return_titles = []
+    articles_counter = 0
+    desired_category = filter_pattern(filter_patterns, tokenized)
+    print("Desired category", desired_category)
+    for (candidate_title, candidate_category), candidate_sim in sorted_title_to_sim:
+        if title_contained_in_hint(candidate_title, hint_str):         # check if title in contained in hint
+            continue
+        if desired_category != "UNKNOWN" and desired_category not in candidate_category:
+            continue
+        return_titles.append(((candidate_title, candidate_category), candidate_sim))
+        articles_counter += 1
+        if articles_counter >= top_n:
+            break
+    return return_titles
+
+
+def rank_articles_for_all_hints(hints_str, wiki, filter_patterns, top_n):
+    hints = hints_str.split("|||")
+    for hint_index in range(1, len(hints)+1):
+        hint = hints[:hint_index]
+        hint_str = " ".join(hint)
+        topn_articles = rank_articles(hint_str, wiki, filter_patterns, top_n)
+        yield hint_str, topn_articles
+
+
+def play_quizbowl_with_stats(questions_path, wiki, filter_patterns):
+     correct_top1 = correct_top3 = correct_top5 = 0
      hints_counter = 0
      with codecs.open(questions_path, encoding="utf-8") as f:
         for question_index, line in enumerate(f, start=1):
@@ -128,30 +170,23 @@ def play_quizbowl_with_stats(questions_path, wiki):
             split = line.split(";")
             correct_answer = re.sub('"', "", split[2])
             print("Correct answer:", correct_answer)
-            hint_text = split[-1]
-            hints = re.sub('"', "", hint_text)
-            hints = hint_text.split("|||")
-            hints_counter += len(hints)
-            hints_tokens = [hint.split() for hint in hints]
-            for hint_index in range(1, len(hints_tokens)+1):
-                hint_tokens = hints_tokens[:hint_index]
-                hint_tokens = [item for sublist in hint_tokens for item in sublist]
-                print(hint_index, " ".join(hint_tokens))
-                hint_article = Article("hint", "UNKNOWN", hint_tokens )
-                hint_article.update_tfidf(wiki.articlecount, wiki.docfrequencies)
-                title_to_sim = wiki.articles_similarity(hint_article)
-                sorted_title_to_sim = sorted(title_to_sim.items(), key=operator.itemgetter(1), reverse=True)[:10]
+            print("\n")
+            hints_str = split[-1]
+            for hint_str, topn_articles in rank_articles_for_all_hints(hints_str, wiki, filter_patterns, top_n=10):
+                print("Hint", hint_str)
+                hints_counter += 1
                 print("Top 10 ranked answers:")
-                print(sorted_title_to_sim)
-                if correct_among_top_n(correct_answer, sorted_title_to_sim, 1):
+                print(topn_articles)
+                if correct_among_top_n(correct_answer, topn_articles, 1):
                     correct_top1 += 1
                     print("Match among top 1")
-                if correct_among_top_n(correct_answer, sorted_title_to_sim, 3):
+                if correct_among_top_n(correct_answer, topn_articles, 3):
                     correct_top3 += 1
                     print("Match among top 3")
-                if correct_among_top_n(correct_answer, sorted_title_to_sim, 5):
+                if correct_among_top_n(correct_answer, topn_articles, 5):
                     correct_top5 += 1
                     print("Match among top 5")
+                print("\n")
             print("\n")
 
      print("P@1:", correct_top1/float(hints_counter))
@@ -188,18 +223,19 @@ if __name__ == '__main__':
 
     input_path = sys.argv[1]     # wiki corpus (tokenized in tsv format)
     questions_path = sys.argv[2]
+    patterns_path = "../EU/input_patterns.csv" if len(sys.argv) <= 3 else sys.argv[3]
 
     if ".json" in input_path:
         wiki = json_deserialiser(input_path)
         print("Wiki corpus loaded from %s" % input_path)
 
     else:
-        wiki = create_wiki(input_path, debug_limit=None, length_filter=500)
+        wiki = create_wiki(input_path, debug_limit=None, length_filter=100)
         json_path = input_path + ".json"
-        json_serialiser(json_path, wiki)
-        print("Wiki dumped to %s" % json_path)
+        # json_serialiser(json_path, wiki)
+        # print("Wiki dumped to %s" % json_path)
 
-    play_quizbowl_with_stats(questions_path, wiki)
+    play_quizbowl_with_stats(questions_path, wiki, filter_patterns=patterns_path)
 
 
 
