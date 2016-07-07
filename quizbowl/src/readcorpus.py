@@ -5,6 +5,9 @@ import math
 import operator
 import re
 import json
+import csv
+import string
+import nltk
 
 class Article:
 
@@ -12,17 +15,18 @@ class Article:
         self.title = title
         self.category = category
         self.wordcounts = Counter(words)
-        self.vocab = list(self.wordcounts.keys())
         self.length = sum(self.wordcounts.values())
         self.tfidf = {}
         self.norm = 0                  # |A|, needed for quick cosine
-        self.termfreqencies = {word: self.wordcounts[word] / float(self.length) for word in self.vocab}
+        self.termfreqencies = {word: self.wordcounts[word] / float(self.length) for word in self.wordcounts.keys()}
 
     def compute_norm(self):
         self.norm = math.sqrt(sum([val**2 for val in self.tfidf.values()]))
 
     def dotproduct(self, other):
-        common_vocab = set(self.vocab).intersection(set(other.vocab))
+        vocab = set(self.wordcounts.keys())
+        other_vocab = set(other.wordcounts.keys())
+        common_vocab = vocab.intersection(other_vocab)
         return sum(self.tfidf[word] * other.tfidf[word] for word in common_vocab)
 
     def similarity(self, other):
@@ -30,7 +34,7 @@ class Article:
         return self.dotproduct(other) / float(self.norm * other.norm)
 
     def update_tfidf(self, doccount, docfrequencies):
-        for word in self.vocab:
+        for word in self.wordcounts.keys():
             if word in docfrequencies:
                 self.tfidf[word] = math.log(doccount / float(docfrequencies[word])) * self.wordcounts[word]
             else:
@@ -54,7 +58,7 @@ class Wiki:
         self.update_docfrequencies(article)      # update document frequencies
 
     def update_docfrequencies(self, article):
-        for word in article.vocab:
+        for word in article.wordcounts.keys():
             self.docfrequencies[word] = self.docfrequencies.get(word, 0) + 1
 
     def vocab(self):
@@ -86,7 +90,7 @@ def article_streamer(input_path, token_separator="|", debug_limit=None, length_f
                 if skipped_count % 10000 == 0:
                     print("%d. %s skipped" % (skipped_count, title))
                 continue
-            
+
             yield title, category, tokens
 
             if debug_limit is not None and index >= debug_limit:
@@ -158,10 +162,10 @@ def play_quizbowl_with_stats(questions_path, wiki):
 def json_serialiser(output_path, wiki):
     with codecs.open(output_path, "w", encoding="utf-8") as f:
         f.write(json.dumps({"docfrequencies": wiki.docfrequencies,
-                            "articlecount": wiki.articlecount}))
+                            "articlecount": wiki.articlecount}).encode("utf-8"))
         f.write("\n")
         for article in wiki.articles:
-            f.write(json.dumps(article.__dict__))
+            f.write(json.dumps(article.__dict__).encode("utf-8"))
             f.write("\n")
 
 
@@ -184,28 +188,6 @@ if __name__ == '__main__':
 
     input_path = sys.argv[1]     # wiki corpus (tokenized in tsv format)
     questions_path = sys.argv[2]
-    # if ".json" in input_path:
-    #     with open(input_path, "r") as f:
-    #         wiki_json = json.load(f)
-    #         articles = []
-    #         for article_json in wiki_json["articles"]:
-    #             article = Article("", "", [])
-    #             article.__dict__ = article_json
-    #             articles.append(article)
-    #         wiki = Wiki()
-    #         wiki.articles = articles
-    #         wiki.docfrequencies = wiki_json["docfrequencies"]
-    #         wiki.articlecount = wiki_json["articlecount"]
-    #     print("Wiki corpus loaded from %s" % input_path)
-    #
-    # else:
-    #     wiki = create_wiki(input_path, debug_limit=None)
-    #     json_path = input_path + ".json"
-    #     with open(json_path, "w") as f:
-    #         json.dump({"articles": [p.__dict__ for p in wiki.articles],
-    #                    "docfrequencies": wiki.docfrequencies,
-    #                    "articlecount": wiki.articlecount}, f)
-    #     print("Wiki dumped to %s" % json_path)
 
     if ".json" in input_path:
         wiki = json_deserialiser(input_path)
