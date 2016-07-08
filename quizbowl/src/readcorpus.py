@@ -1,3 +1,4 @@
+import termios, fcntl, os
 import codecs
 import sys
 from collections import Counter
@@ -6,6 +7,8 @@ import operator
 import re
 import json
 import nltk
+import time
+from subprocess import call
 
 class Article:
 
@@ -160,23 +163,133 @@ def rank_articles_for_all_hints(hints_str, wiki, filter_patterns, top_n):
         topn_articles = rank_articles(hint_str, wiki, filter_patterns, top_n)
         yield hint_str, topn_articles
 
+def wait_for_char():
+    fd = sys.stdin.fileno()
 
+    oldterm = termios.tcgetattr(fd)
+    newattr = termios.tcgetattr(fd)
+    newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
+    termios.tcsetattr(fd, termios.TCSANOW, newattr)
+
+    oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
+    fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
+    try:    
+        while 1:
+            try:
+                c = sys.stdin.read(1)
+                return c
+            except IOError: 
+                pass
+    finally:
+        termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
+        fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
+    
+
+def demo_quizbowl(questions_path, wiki, filter_patterns):
+     """Simple interactive demo of quizbowl playing against human team."""
+     
+     print("Press any key to start playing...")
+     c = wait_for_char()
+     
+     with codecs.open(questions_path, encoding="utf-8") as f:
+        for question_index, line in enumerate(f, start = 1): # get one question 
+            split = line.split(";")
+            correct_answer = re.sub('"', "", split[2])
+            #print("Correct answer:", correct_answer)
+            print("\n")
+            hints_str = split[-1]
+            numhints = len(hints_str.split("|||"))
+            hints_counter = 0
+            computer_has_guessed = 0
+            for hint_str, topn_articles in rank_articles_for_all_hints(hints_str, wiki, filter_patterns, top_n = 5): # got through each hint
+                os.system('clear')
+                hints_counter += 1
+                ### Show hint ###
+                #print("#############\n# QUESTION: #\n#############\n\n" + "[" + str(hints_counter) + "/" + str(numhints) + "] " + hint_str).encode("utf-8")
+                print("* QUESTION: *\n" + "[" + str(hints_counter) + "/" + str(numhints) + "] " + hint_str).encode("utf-8")
+                print("=" * 60).encode("utf-8")
+
+                ### Wait for keypress/question reading ###
+                c = wait_for_char()
+                ### Print Guesses ###
+                print("\n" + "* CURRENT TOP GUESSES *\n")
+                position = 1
+                for guess, score in topn_articles:
+                    print str(position) + '. ' + guess[0] + '\t' + str(score)[:4]
+                    position += 1
+
+                ### Decide whether to BUZZ in ###
+                if computer_has_guessed == 0 and len(topn_articles) > 0 and (len(topn_articles) == 1 or (topn_articles[0][1] - topn_articles[1][1]) > 0.04):
+                    print("\n* I KNOW I KNOW I KNOW !!! *\n")
+                    call(["afplay", "./../sounds/pickme.wav"])
+                    ### Must now decide who gets to answer ###                    
+                    c = wait_for_char()
+                    while c != 'c' and c != 'h':
+                        print("OPERATOR: must answer c (computer) or h (human)")
+                        c = wait_for_char()
+                    if c == 'c':
+                        computer_has_guessed = 1
+                        print("I think the answer is: " + topn_articles[0][0][0]).encode("utf-8")           
+                        ### Mark correct/incorrect ###
+                        print("The correct answer is: "),
+                        time.sleep(2)
+                        print correct_answer
+                    if c == 'h':
+                        print("***HUMAN TEAM GUESSES***")
+                        print("The correct answer is: "),
+                        time.sleep(2)
+                        print correct_answer
+                        
+                    c = wait_for_char()
+                    while c != '0' and c != '1':
+                        print("OPERATOR: must answer 0 or 1")
+                        c = wait_for_char()
+                    if c == '0':
+                        call(["afplay", "./../sounds/sadtrombone.wav"])
+                    if c == '1':
+                        call(["afplay", "./../sounds/applause.wav"])
+                        break
+                ### Human may BUZZ ###
+                c = wait_for_char()
+                while c != 'h' and c != ' ':
+                    print("OPERATOR: must answer h or [SPACE]")
+                    c = wait_for_char()
+                if c == 'h':
+                    print("***HUMAN TEAM GUESSES***")
+                    print("The correct answer is: "),
+                    time.sleep(2)
+                    print correct_answer
+                    c = wait_for_char()
+                    while c != '0' and c != '1':
+                        print("OPERATOR: must answer 0 or 1")
+                        c = wait_for_char()
+                    if c == '0':
+                        call(["afplay", "sadtrombone.wav"])
+                    if c == '1':
+                        call(["afplay", "applause.wav"])
+                        break
+            print ("Last correct answer: " + correct_answer).encode("utf-8")
+            print("\n**READY FOR THE NEXT QUESTION***")
+            c = wait_for_char()
+            
 def play_quizbowl_with_stats(questions_path, wiki, filter_patterns):
+     """Plays quizbowl by itself and outputs statistics on its guesses."""
      correct_top1 = correct_top3 = correct_top5 = 0
      hints_counter = 0
      with codecs.open(questions_path, encoding="utf-8") as f:
-        for question_index, line in enumerate(f, start=1):
+        for question_index, line in enumerate(f, start=1): # get one question 
             print("Question %d" % question_index)
             split = line.split(";")
             correct_answer = re.sub('"', "", split[2])
             print("Correct answer:", correct_answer)
             print("\n")
             hints_str = split[-1]
-            for hint_str, topn_articles in rank_articles_for_all_hints(hints_str, wiki, filter_patterns, top_n=10):
+            for hint_str, topn_articles in rank_articles_for_all_hints(hints_str, wiki, filter_patterns, top_n=10): # got through each hint
                 print("Hint", hint_str)
                 hints_counter += 1
                 print("Top 10 ranked answers:")
-                print(topn_articles)
+                print(topn_articles) # list of tuples ((title, category, score))
+
                 if correct_among_top_n(correct_answer, topn_articles, 1):
                     correct_top1 += 1
                     print("Match among top 1")
@@ -219,11 +332,20 @@ def json_deserialiser(input_path):
     return wiki
 
 
+def print_usage():
+     print("Usage: readcorpus.py [-t|-d] wiki_corpus_file questions_file patterns_file")
+     print("\n-t\trun internal test.\n-d\trun human/computer match demo.")
+
 if __name__ == '__main__':
 
-    input_path = sys.argv[1]     # wiki corpus (tokenized in tsv format)
-    questions_path = sys.argv[2]
-    patterns_path = "../EU/input_patterns.csv" if len(sys.argv) <= 3 else sys.argv[3]
+    if len(sys.argv) <= 3:
+        print_usage()
+        sys.exit()
+        
+    mode = sys.argv[1]
+    input_path = sys.argv[2]     # wiki corpus (tokenized in tsv format)
+    questions_path = sys.argv[3]
+    patterns_path = "../EU/input_patterns.csv" if len(sys.argv) <= 4 else sys.argv[4]
 
     if ".json" in input_path:
         wiki = json_deserialiser(input_path)
@@ -234,8 +356,10 @@ if __name__ == '__main__':
         json_path = input_path + ".json"
         # json_serialiser(json_path, wiki)
         # print("Wiki dumped to %s" % json_path)
-
-    play_quizbowl_with_stats(questions_path, wiki, filter_patterns=patterns_path)
-
-
-
+    if mode.startswith('-t'):
+        play_quizbowl_with_stats(questions_path, wiki, filter_patterns=patterns_path)
+    elif mode.startswith('-d'):
+        demo_quizbowl(questions_path, wiki, filter_patterns=patterns_path)
+    else:
+        printusage()
+        
