@@ -1,0 +1,224 @@
+read lexc HUN.lexc
+def Lexicon;
+
+# needs more definitions
+def V       [a|á|e|é|i|í|o|ó|u|ú|ö|ő|ü|ű];
+def LowV    [a|á|ó|o|u|ú];
+def HighV   [i|í|e|é];
+def SuperHV [ö|ő|ü|ű];
+def C       [b|c|d|f|g|h|j|k|l|m|n|p|q|r|s|t|v|w|x|y|z];
+def DoubleC [c s|d z|d z s|g y|l y|n y|s z|t y|z s];
+def SibilantC [s | s z | z | l | r | n | n y | j | l y ];
+def SibilantC2 [s|s z|z|n y|j|l y];
+def JaC [ c| c s| g y| h| j| n y| s| s z| t y| z| z s ];
+
+def HarmonyPL A -> o || LowV \V+ "+" _ k .o. A -> e || HighV \V+ "+" _ k .o. A -> ö || SuperHV \V+ "+" _ k .o. a -> á , e -> é || _ "+" A k ,, A -> 0 || V "+" _ k ;
+
+def HarmonyA1 P -> o || LowV \V+ "+" _ [m|d] .o. 
+              P -> e || HighV \V+ "+" _ [m|d] .o. 
+              P -> ö || SuperHV \V+ "+" _ [m|d] .o. 
+              a -> á , e -> é, i -> í, o -> ó, u -> ú, ö -> ő, ü -> ű || _ "+" P [m|d] ,, P -> 0 || V "+" _ [m|d];
+
+def HarmonyA2 A -> a || LowV  \V+ "+" _ i [m|d] .o. 
+              A -> e || HighV \V+ "+" _ i [m|d] .o. 
+              a -> á , e -> é || _ "+" A i [m|d] ,, A -> 0 || V "+" _ i [m|d] ;
+
+def HarmonyA3 J A -> a || LowV JaC "+" _ (i) (k)  .o. 
+              J A -> e || [HighV|SuperHV] JaC "+" _ (i) (k) .o. 
+              J A -> j a || LowV [C - JaC] "+" _ (i) (k)  .o. 
+              J A -> j e || [HighV|SuperHV] [C - JaC] "+" _ (i) (k) .o. 
+              a -> á || _ "+" J A ,, J A -> j a .o. 
+              e -> é || _ "+" J A ,, J A -> j e .o. 
+              j [a|e] -> 0 || [á|é] "+" _ i (k) ;
+
+def HarmonyA4 U -> u   || LowV \V* "+" _ (n) k .o. 
+              U -> ü   || [HighV | SuperHV] \V* "+" _ (n) k .o. 
+              u -> j u || [LowV \V* [C - JaC] | á] "+" _ (n) k .o. 
+              ü -> j ü || [[HighV | SuperHV] \V* [C - JaC] | é] "+" _ (n) k ; 
+
+def HarmonyA5 A t A -> a t o, A i t A -> a i t o || LowV \V* "+" _ k ,, a -> á || _ "+" A (i) t A k .o.
+              A t A -> e t e, A i t A -> e i t e || HighV \V* "+" _ k ,, e -> é || _ "+" A (i) t A k .o.
+              A t A -> ö t ö, A i t A -> e i t e || SuperHV \V* "+" _ k .o.
+              a t o -> j a t o, e t e -> j e t e, ö t ö -> j ö t ö, a i t o -> j a i t o, e i t e -> j e i t e || [[C - JaC] | V] "+" _ k .o. 
+              [j a|j e|j ö] -> 0 || V "+" _ (i) t [o|e|ö] k;
+
+def HarmonyDAT  A -> a || LowV \V* "+" n _ k .o. A -> e || [HighV | SuperHV] \V* "+" n _ k .o. a -> á, e -> é || _ "+" n [a|e] k;
+
+def HarmonyACC  A -> o || LowV \V+ "+" _ t .o. 
+                A -> e || HighV \V+ "+" _ t .o. 
+                A -> ö || SuperHV \V+ "+" _ t .o. 
+                a -> á , e -> é || _ "+" [A t | t] ,, A -> 0 || V "+" _ .o. 
+                [a|e|o|ö] -> 0 || SibilantC+ "+" _ t ;
+
+def HarmonyALL  O -> o || LowV \V+ "+" h _ z .#. .o. 
+                O -> e || HighV \V+ "+" h _ z .#. .o. 
+                O -> ö || SuperHV \V+ "+" h _ z .#.;
+
+def HarmonyABL  O -> ó || LowV \V+ "+" [t|b|r] _ l .o. 
+                O -> ő || [HighV|SuperHV] \V+ "+" [t|b|r] _ l .o.
+                a -> á , e -> é || _ "+" [t|b|r] O l;
+
+def HarmonySUP  O -> 0 || V+ "+" _ n .#. ,, a -> á, e -> é || _ "+" O n .#. .o.
+                O -> o || LowV \V+ "+" _ n .o.
+                O -> e || HighV \V+ "+" _ n .o.
+                O -> ö || SuperHV \V+ "+" _ n ;
+
+def HarmonyESSM U -> u || LowV \V* "+" _ l .o. 
+                U -> ü || [HighV|SuperHV] \V* "+" _ l .o. 
+                a -> á, e -> é || _ "+" [u|ü] l; 
+
+def HarmonyA6 A -> a || LowV \V* "+" (b|r) _ (n|n k é n t) .o. 
+              A -> e || [HighV|SuperHV] \V* "+" (b|r) _ (n|n k é n t) .o. 
+              a -> á, e -> é || _ "+" [b a n|b e n|b a| b e|r a| r e| a n k é n t| e n k é n t];
+
+def HarmonyA7  A n t -> a n t a || LowV \V*  _ .o.
+               A n t -> e n t e || [HighV|SuperHV] \V* _ .o. 
+               [a|e] -> 0 || [V - a - e] "+" _ n t [a|e] .o.
+               a -> á, e -> é || _ "+" n t [a|e];   
+
+def HarmonyINS  [s z "+" v .x. s s "+" z] |
+             [c s "+" v .x. c c "+" s] |
+             [d z "+" v .x. d d "+" z] |
+             [g y "+" v .x. g g "+" y] |
+             [l y "+" v .x. l l "+" y] |
+             [t y "+" v .x. t t "+" y] |
+             [n y "+" v .x. n n "+" y] |
+             [  b "+" v .x.   b "+" b] |
+             [  c "+" v .x.   c "+" c] |
+             [  d "+" v .x.   d "+" d] |
+             [  f "+" v .x.   f "+" f] |
+             [  g "+" v .x.   g "+" g] |
+             [  h "+" v .x.   h "+" h] |
+             [  j "+" v .x.   j "+" j] |
+             [  k "+" v .x.   k "+" k] |
+             [  l "+" v .x.   l "+" l] |
+             [  m "+" v .x.   m "+" m] |
+             [  n "+" v .x.   n "+" n] |
+             [  p "+" v .x.   p "+" p] |
+             [  q "+" v .x.   q "+" q] |
+             [  r "+" v .x.   r "+" r] |
+             [  s "+" v .x.   s "+" s] |
+             [  t "+" v .x.   t "+" t] |
+             [  v "+" v .x.   v "+" v] |
+             [  w "+" v .x.   w "+" w] |
+             [  x "+" v .x.   x "+" x] |
+             [  y "+" v .x.   y "+" y] |
+             [  z "+" v .x.   z "+" z] @-> || _ A (l);
+
+def HarmonyINS2 A -> a || LowV [b "+" b|c "+" c|d "+" d|f "+" f|g "+" g|h "+" h|j "+" j|k "+" k| l "+" l|m "+" m|n "+" n|p "+" p|q "+" q|r "+" r|s "+" s|t "+" t|v "+" v|w "+" w|x "+" x|y "+" y|z "+" z|s s "+" z|c c "+" s|d d "+" z|l l "+" y|n n "+" y|g g "+" y|t t "+" y] _ l .o.
+              A -> e || [HighV|SuperHV] [b "+" b|c "+" c|d "+" d|f "+" f|g "+" g|h "+" h|j "+" j|k "+" k| l "+" l|m "+" m|n "+" n|p "+" p|q "+" q|r "+" r|s "+" s|t "+" t|v "+" v|w "+" w|x "+" x|y "+" y|z "+" z|s s "+" z|c c "+" s|d d "+" z|l l "+" y|n n "+" y|g g "+" y|t t "+" y] _ l .o.
+A -> á || LowV [b "+" b|c "+" c|d "+" d|f "+" f|g "+" g|h "+" h|j "+" j|k "+" k| l "+" l|m "+" m|n "+" n|p "+" p|q "+" q|r "+" r|s "+" s|t "+" t|v "+" v|w "+" w|x "+" x|y "+" y|z "+" z|s s "+" z|c c "+" s|d d "+" z|l l "+" y|n n "+" y|g g "+" y|t t "+" y] _ .#. .o.
+              A -> é || [HighV|SuperHV] [b "+" b|c "+" c|d "+" d|f "+" f|g "+" g|h "+" h|j "+" j|k "+" k| l "+" l|m "+" m|n "+" n|p "+" p|q "+" q|r "+" r|s "+" s|t "+" t|v "+" v|w "+" w|x "+" x|y "+" y|z "+" z|s s "+" z|c c "+" s|d d "+" z|l l "+" y|n n "+" y|g g "+" y|t t "+" y] _ .#. .o.
+              A -> a || LowV "+" v _ l .o.
+              A -> á || LowV "+" v _ .#. .o.
+              A -> e || [HighV|SuperHV] "+" v _ l .o.
+              A -> é || [HighV|SuperHV] "+" v _ .#. .o.
+              a -> á, e -> é || _ "+" v [a|e|á|é] (l) .#. ;
+
+def HarmonySOC A s t u l -> a s t u l || LowV \V* _ .#. .o.
+               A s t u l-> e s t ü l || [HighV|SuperHV] \V* _ .#. .o.
+               A s t u l-> s t u l || LowV "+" _ .#. .o.
+               A s t u l-> s t ü l || [HighV|SuperHV] "+" _ .#. .o.
+               a -> á, e -> é || _ "+" s t [u|ü] l ;
+
+def HarmonyADE A -> á || LowV \V* n _ l .#. .o.
+               A -> é || [HighV|SuperHV] \V* n _ l .#. .o.
+               a -> á, e -> é || _ "+" n [á|é] l .#. ;
+
+def HarmonyINDI O -> o || LowV \V+ "+" _ [k|m|d]  .o.
+                O -> e || [HighV|SuperHV] \V+ "+" _ [k|m|d]  .o.
+                T -> o t t ||LowV C C "+" _ , í t "+" _, .#. C* LowV+ t "+" _ .o.
+                T -> e t t ||HighV C C "+" _ , í t "+" _, .#. C* HighV+ t "+" _ .o.
+                T -> ö t t ||SuperHV C C "+" _ , í t "+" _, .#. C* SuperHV+ t "+" _ .o.
+                T -> t || [s|l|r|n|n y|j|l y] "+" _, .#. C* V+ C* [a|e] d "+" _ .o.
+                T -> t .o.
+                t -> o t t || LowV+ [z|t|g|v] "+" _ .#., .#. C* V+ C* a d "+" _ .#. .o.
+                t -> e t t || HighV+ [z|t|g|v] "+" _ .#., .#. C* V+ C* e d "+" _ .#. .o.
+                t -> ö t t || SuperHV+ [z|t|g|v] "+" _ .#., .#. C* V+ C* [a|e] d "+" _ .#. .o.
+                Á t o -> á t o, A t o -> a t o || LowV \V+ "+" [j|t] _ k .#. .o.
+                Á t o -> é t e, A t o -> e t e || [HighV|SuperHV] \V+ "+" [j|t] _ k  .#. .o. #TODO
+                A -> a ||LowV \V+ "+" [t|n|l] _ (m|d|k) .#. .o.
+                A -> e ||[HighV|SuperHV] \V+ "+" [t|n|l] _ (m|d|k) .#. .o.
+                U -> u || LowV \V+ "+" (t|j) _ (n) k .o. 
+                U -> ü || [HighV | SuperHV] \V+ "+" (t|j) _ (n) k .o.
+                S l -> s z || [C - SibilantC2] "+" _  .o.
+                S l -> a l || LowV [SibilantC2] "+" _  .o.
+                S l -> e l || [HighV|SuperHV] [SibilantC2] \V+ "+" _  .o.
+                Á -> á || LowV \V+ "+" t _ [l|k] .#. .o.
+                Á -> é || [HighV|SuperHV] \V+ "+" t _ [l|k] .#.  .o.  
+                j á k -> i k || [HighV|SuperHV] \V+ "+" _ .o.
+                j a -> i || [HighV|SuperHV] \V+ "+" _  .o.
+                A l a -> a l a || LowV \V+ "+" t _ k .o.
+                A l a -> e l e || [HighV|SuperHV] \V+ "+" t _ k .o.
+                [o|e|ö] t t -> t || C d "+" _ ;
+              
+
+def HarmonyINDI2  [s z "+" j .x. s s "+" z] |
+             [c s "+" j .x. c c "+" s] |
+             [d z "+" j .x. d d "+" z] |
+             [  s "+" j .x.   s "+" s] | # t + j = ss
+             [  z "+" j .x.   z "+" z] @-> || _ [u|ü|a|á|e|é] (t) (o|e) (k) .#. ;
+
+def HarmonyPOTE A -> a || LowV \V+ "+" h _ t .o.
+                A -> e || [HighV|SuperHV] \V+ "+" h _ t ;
+
+def HarmonyCAUS t -> 0 || .#. C* V+ [C - t]+ "+" _ A t , C t "+" _ A t ;
+
+def HarmonyCAUS2 A -> a || LowV \V+ "+" (t) _ t .o.
+                 A -> e || [HighV|SuperHV] \V+ "+" (t) _ t ;
+                
+def HarmonyCOND A -> á || LowV \V+ "+" n _ (m| n k|l|d|k) .o.
+                 A -> é || [HighV|SuperHV] \V+ "+" n _ (m | n k|l|d|k) .o.
+                 A -> a || LowV \V+ "+" n _ .#. .o.
+                 A -> e || [HighV|SuperHV] \V+ "+" n _ .#. .o.
+                 A t o k -> á t o k || LowV \V+ "+" n _ .#. .o.
+                 A t o k -> é t e k || [HighV|SuperHV] \V+ "+" n _ .#. .o.
+                 Á l a k -> á l a k || LowV \V+ "+" n _ .#. .o.
+                 Á l a k -> é l e k || [HighV|SuperHV] \V+ "+" n _ .#. ;
+
+def HarmonyIMPE A -> a || LowV \V+ "+" j _ (k|m) .#. .o.
+                A -> e || [HighV|SuperHV] \V+ "+" j _ (k|m) .#. .o.
+                U -> u || LowV \V+ "+" j _ n (k|m) .#. .o.
+                U -> ü || [HighV|SuperHV] \V+ "+" j _ n (k|m) .#. .o.
+                A -> á || LowV \V+ "+" j _ [l|d] .#. .o.
+                A -> é || [HighV|SuperHV] \V+ "+" j _ [l|d] .#. .o.
+                O -> o || LowV \V+ "+" j _ n .#. .o.
+                O -> e || [HighV|SuperHV] \V+ "+" j _ n .#. .o.
+                A t o -> a t o || LowV \V+ "+" j _ k .#. .o.
+                A t o -> e t e || [HighV|SuperHV] \V+ "+" j _ k .#. .o.
+                Á t o -> á t o || LowV \V+ "+" j _ k .#. .o.
+                Á t o -> é t e || [HighV|SuperHV] \V+ "+" j _ k .#. .o.
+                A n a -> á n a, A l a -> a l a || LowV \V+ "+" j _ k .#. .o.
+                A n a -> é n e, A l a -> e l e || [HighV|SuperHV] \V+ "+" j _ k .#. ;
+                 
+
+def HarmonyIMPE2  [s z "+" j .x. s s "+" z] |
+             [c s "+" j .x. c c "+" s] |
+             [s t "+" j .x.   s "+" s] |
+             [s z t  "+" j .x. s s "+" z] |
+             [z s "+" j .x. z z "+" s] |
+             [d z "+" j .x. d d "+" z] |
+             [  s "+" j .x.   s "+" s] |
+             [  t "+" j .x.   s "+" s] |
+             [  z "+" j .x.   z "+" z] @-> || _ [u|ü|a|á|e|é] (t) (o|e) (k) .#. .o.
+             j -> s || [í|C] t "+" _ [u|ü|a|á|e|é] (t) (o|e) (k) .#. ;
+             
+def HarmonyINFI O -> o, u -> u || LowV \V+ "+" n (i) _ [m|d|n k|k] .#. .o.
+                O -> e, u -> ü || [HighV|SuperHV] \V+ "+" n (i) _ [m|d|n k|k] .#. .o.
+                a -> a || LowV \V+ "+" n i _  .#. .o.
+                a -> e || [HighV|SuperHV] \V+ "+" n i _ .#. .o.
+                O t o -> o t o, A l a -> a l a || LowV \V+ "+" n _ k .#. .o.
+                O t o -> e t e, A l a -> e l e || [HighV|SuperHV] \V+ "+" n _ k .#. ;
+
+def HarmonyPART O -> o, A -> a || LowV \V+ "+" _ [ n d ó | t t], LowV \V+ "+" v _ .#. .o.
+                A -> e || [HighV|SuperHV] \V+ "+" _ [ n d ó | t t], LowV \V+ "+" v _ .#. .o.
+                O -> e || HighV \V+ "+" _ t t .o.
+                O -> ö || SuperHV \V+ "+" _ t t ;
+                
+
+def Cleanup "+" -> 0;
+
+
+def   Grammar [Lexicon .o. HarmonyPL .o. HarmonyA1 .o. HarmonyA2 .o. HarmonyA3 .o. HarmonyA4 .o. HarmonyA5 .o. HarmonyDAT .o. HarmonyACC .o. HarmonyALL .o. HarmonyABL .o. HarmonySUP .o. HarmonyESSM .o. HarmonyA6 .o. HarmonyA7 .o. HarmonyINS .o. HarmonyADE .o. HarmonyINS2 .o. HarmonySOC .o. HarmonyINDI .o. HarmonyINDI2 .o. HarmonyPOTE .o. HarmonyCAUS .o. HarmonyCAUS2 .o. HarmonyCOND .o. HarmonyIMPE .o. HarmonyIMPE2 .o. HarmonyINFI .o. HarmonyPART .o. Cleanup];
+regex Grammar;
+
