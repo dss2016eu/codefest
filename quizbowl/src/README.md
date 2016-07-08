@@ -12,4 +12,12 @@ Reads the tokenized and filtered wikipedia together with questions and plays the
 
 Usage:
 
-`readcorpus.py output.tsv question_file.csv`
+`readcorpus.py [-t|-d] wiki_corpus_file questions_file patterns_file`
+
+The `-t` flag starts a self test to give statistics on all the questions.  The `-d` flag starts the demo for a human-computer match.
+
+For example:
+
+`readcorpus.py -d ./../EU/eu_tokenized_categorised_short.tsv ./../EU/short_questions.csv`
+
+would run the demo with the Basque `short_questions.csv` file.
